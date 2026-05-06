@@ -99,7 +99,12 @@ const allSquares = [
   "We hear your concerns",
   "We know we've lost your trust",
   "Philanthropic support",
-  "Vibrant and committed community"
+  "Vibrant and committed community",
+  "Shut up and give us your money",
+  "Grant donor wants...",
+  "We can't disclose the grant terms",
+  "A detailed plan isn't ready yet",
+  "The board has worked tirelessly"
 ];
 
 let card = [];
@@ -115,7 +120,7 @@ function shuffle(arr) {
 }
 
 function buildCard() {
-  const shuffled = shuffle(allSquares);
+  const shuffled = shuffle(allSquares).slice(0, 24);
   card = [
     ...shuffled.slice(0, 12),
     "FREE",
@@ -166,7 +171,7 @@ function updateStatus() {
   const status = document.getElementById('status');
   const winner = checkBingo();
   if (winner) {
-    status.textContent = "BINGO!";
+    status.textContent = "BINGO! The board has said a lot of nothing. Again.";
     status.className = 'status won';
   } else {
     const count = daubed.filter(Boolean).length - 1;
