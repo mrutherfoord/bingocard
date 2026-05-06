@@ -29,21 +29,23 @@
     background: #fff;
     border: 0.5px solid #ddd;
     border-radius: 8px;
-    padding: 10px 8px;
-    min-height: 80px;
+    padding: 8px 6px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: 11px;
+    line-height: 1.35;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
     user-select: none;
+    overflow: hidden;
   }
   .cell:hover { background: #f0f0ee; }
   .cell.daubed { background: #1D9E75; border-color: #0F6E56; color: #E1F5EE; }
-  .cell.free { background: #534AB7; border-color: #3C3489; color: #EEEDFE; font-weight: 500; font-size: 13px; cursor: default; }
+  .cell.free { background: #534AB7; border-color: #3C3489; color: #EEEDFE; font-weight: 500; cursor: default; flex-direction: column; gap: 2px; }
+  .cell.free .free-sub { font-size: 9px; font-weight: 400; opacity: 0.8; }
   .cell.winner { background: #D85A30; border-color: #993C1D; color: #FAECE7; }
   .status { font-size: 14px; color: #555; min-height: 20px; margin-bottom: 10px; }
   .status.won { color: #0F6E56; font-weight: 500; font-size: 15px; }
@@ -58,7 +60,8 @@
   }
   .reset:hover { background: #eee; }
   @media (max-width: 480px) {
-    .cell { min-height: 64px; font-size: 10px; padding: 6px 4px; }
+    .cell { height: 68px; font-size: 10px; padding: 5px 4px; }
+    .cell.free .free-sub { font-size: 8px; }
     h1 { font-size: 20px; }
   }
 </style>
@@ -69,10 +72,10 @@
   <p class="sub">Tonight's 7:30pm Zoom. Click a square when you hear it.</p>
   <div class="grid" id="grid"></div>
   <div class="status" id="status">Click squares as the board speaks.</div>
-  <button class="reset" onclick="resetBoard()">Reset card</button>
+  <button class="reset" onclick="newCard()">New card</button>
 </div>
 <script>
-const squares = [
+const allSquares = [
   "We don't have that information yet",
   "We rose to meet the moment",
   "Recoverable grant",
@@ -85,7 +88,6 @@ const squares = [
   "The board saved the day",
   "Transparent at defined milestones",
   "Stronger, more sustainable model",
-  "FREE\n(board says something vague)",
   "Retention and enrollment",
   "This is not unique to Roycemore",
   "Rich Odell",
@@ -100,8 +102,28 @@ const squares = [
   "Vibrant and committed community"
 ];
 
-let daubed = new Array(25).fill(false);
-daubed[12] = true;
+let card = [];
+let daubed = [];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildCard() {
+  const shuffled = shuffle(allSquares);
+  card = [
+    ...shuffled.slice(0, 12),
+    "FREE",
+    ...shuffled.slice(12, 24)
+  ];
+  daubed = new Array(25).fill(false);
+  daubed[12] = true;
+}
 
 function checkBingo() {
   const lines = [
@@ -120,19 +142,22 @@ function renderGrid() {
   grid.innerHTML = '';
   const winner = checkBingo();
   const winSet = winner ? new Set(winner) : new Set();
-  squares.forEach((text, i) => {
+  card.forEach((text, i) => {
     const cell = document.createElement('div');
     cell.className = 'cell';
-    if (i === 12) cell.classList.add('free');
-    else if (daubed[i] && winSet.has(i)) cell.classList.add('winner');
-    else if (daubed[i]) cell.classList.add('daubed');
-    cell.textContent = text;
-    cell.onclick = () => {
-      if (i === 12) return;
-      daubed[i] = !daubed[i];
-      renderGrid();
-      updateStatus();
-    };
+    if (i === 12) {
+      cell.classList.add('free');
+      cell.innerHTML = 'FREE<span class="free-sub">board says something vague</span>';
+    } else {
+      if (daubed[i] && winSet.has(i)) cell.classList.add('winner');
+      else if (daubed[i]) cell.classList.add('daubed');
+      cell.textContent = text;
+      cell.onclick = () => {
+        daubed[i] = !daubed[i];
+        renderGrid();
+        updateStatus();
+      };
+    }
     grid.appendChild(cell);
   });
 }
@@ -150,14 +175,13 @@ function updateStatus() {
   }
 }
 
-function resetBoard() {
-  daubed = new Array(25).fill(false);
-  daubed[12] = true;
+function newCard() {
+  buildCard();
   renderGrid();
   updateStatus();
 }
 
-renderGrid();
+newCard();
 </script>
 </body>
 </html>
