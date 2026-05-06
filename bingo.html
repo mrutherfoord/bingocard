@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roycemore Board Bingo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f5f3;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .container { max-width: 600px; width: 100%; }
+  h1 { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
+  .sub { font-size: 14px; color: #666; margin-bottom: 20px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .cell {
+    background: #fff;
+    border: 0.5px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 8px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+  }
+  .cell:hover { background: #f0f0ee; }
+  .cell.daubed { background: #1D9E75; border-color: #0F6E56; color: #E1F5EE; }
+  .cell.free { background: #534AB7; border-color: #3C3489; color: #EEEDFE; font-weight: 500; font-size: 13px; cursor: default; }
+  .cell.winner { background: #D85A30; border-color: #993C1D; color: #FAECE7; }
+  .status { font-size: 14px; color: #555; min-height: 20px; margin-bottom: 10px; }
+  .status.won { color: #0F6E56; font-weight: 500; font-size: 15px; }
+  .reset {
+    padding: 7px 18px;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 0.5px solid #ccc;
+    background: transparent;
+    color: #1a1a1a;
+  }
+  .reset:hover { background: #eee; }
+  @media (max-width: 480px) {
+    .cell { min-height: 64px; font-size: 10px; padding: 6px 4px; }
+    h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Roycemore Board Bingo</h1>
+  <p class="sub">Tonight's 7:30pm Zoom. Click a square when you hear it.</p>
+  <div class="grid" id="grid"></div>
+  <div class="status" id="status">Click squares as the board speaks.</div>
+  <button class="reset" onclick="resetBoard()">Reset card</button>
+</div>
+<script>
+const squares = [
+  "We don't have that information yet",
+  "We rose to meet the moment",
+  "Recoverable grant",
+  "We can't release that yet",
+  "That could cause confusion",
+  "Schools are just hard to fund",
+  "Demographic cliff",
+  "We'll communicate better",
+  "The board is not the problem",
+  "The board saved the day",
+  "Transparent at defined milestones",
+  "Stronger, more sustainable model",
+  "FREE\n(board says something vague)",
+  "Retention and enrollment",
+  "This is not unique to Roycemore",
+  "Rich Odell",
+  "Path forward",
+  "We were caught off guard",
+  "Velvet Guilt Hammer",
+  "The head of school's decisions",
+  "Close the gap",
+  "We hear your concerns",
+  "We know we've lost your trust",
+  "Philanthropic support",
+  "Vibrant and committed community"
+];
+
+let daubed = new Array(25).fill(false);
+daubed[12] = true;
+
+function checkBingo() {
+  const lines = [
+    [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
+    [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
+    [0,6,12,18,24],[4,8,12,16,20]
+  ];
+  for (const line of lines) {
+    if (line.every(i => daubed[i])) return line;
+  }
+  return null;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const winner = checkBingo();
+  const winSet = winner ? new Set(winner) : new Set();
+  squares.forEach((text, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    if (i === 12) cell.classList.add('free');
+    else if (daubed[i] && winSet.has(i)) cell.classList.add('winner');
+    else if (daubed[i]) cell.classList.add('daubed');
+    cell.textContent = text;
+    cell.onclick = () => {
+      if (i === 12) return;
+      daubed[i] = !daubed[i];
+      renderGrid();
+      updateStatus();
+    };
+    grid.appendChild(cell);
+  });
+}
+
+function updateStatus() {
+  const status = document.getElementById('status');
+  const winner = checkBingo();
+  if (winner) {
+    status.textContent = "BINGO! The board has said a lot of nothing. Again.";
+    status.className = 'status won';
+  } else {
+    const count = daubed.filter(Boolean).length - 1;
+    status.textContent = count === 0 ? 'Click squares as the board speaks.' : `${count} square${count !== 1 ? 's' : ''} daubed.`;
+    status.className = 'status';
+  }
+}
+
+function resetBoard() {
+  daubed = new Array(25).fill(false);
+  daubed[12] = true;
+  renderGrid();
+  updateStatus();
+}
+
+renderGrid();
+</script>
+</body>
+</html>
