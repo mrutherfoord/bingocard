@@ -172,7 +172,7 @@ function updateStatus() {
   const status = document.getElementById('status');
   const winner = checkBingo();
   if (winner) {
-    status.textContent = "BINGO! The board has said a lot of nothing. Again.";
+    status.textContent = "BINGO!";
     status.className = 'status won';
   } else {
     const count = daubed.filter(Boolean).length - 1;
